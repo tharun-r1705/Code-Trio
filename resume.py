@@ -45,7 +45,13 @@ async def handle_file_upload():
 
             # Analyze the resume text
             rating, feedback = analyze_resume(resume_text)
-            await cl.Message(content=f"Your resume rating is: {rating}/100\nFeedback: {feedback}").send()
+
+            # After analyzing, evaluate the resume and provide suggestions for improvement
+            is_good, suggestions = evaluate_resume(resume_text)
+            suggestion_message = "\n".join(suggestions) if suggestions else "Your resume looks good!"
+
+            # Send feedback and suggestions to the user
+            await cl.Message(content=f"Your resume rating is: {rating}/100\n\nFeedback:\n{feedback}\n\nSuggestions:\n{suggestion_message}").send()
         else:
             await cl.Message(content="No file uploaded. Please try again.").send()
     except Exception as e:
@@ -209,6 +215,27 @@ def analyze_resume(resume_text):
 
     return score, detailed_feedback
 
+# Function to evaluate the resume and provide suggestions
+def evaluate_resume(resume_text):
+    suggestions = []
+    
+    # Basic checks for common resume elements
+    if len(resume_text) < 300:  # Example check for length
+        suggestions.append("Your resume seems a bit short. Consider adding more details about your experience and skills.")
+    
+    if "experience" not in resume_text.lower():
+        suggestions.append("Make sure to include a section on your work experience.")
+    
+    if "education" not in resume_text.lower():
+        suggestions.append("Don't forget to include your educational background.")
+    
+    if "skills" not in resume_text.lower():
+        suggestions.append("Highlight your skills to showcase your qualifications.")
+    
+    if not suggestions:
+        return True, []  # Resume is good
+    else:
+        return False, suggestions  # Resume needs improvement
 
 if __name__ == "__main__":
     cl.run()
